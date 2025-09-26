@@ -6,12 +6,20 @@ import {
   Button,
   Stack,
   InputAdornment,
+  Select,
+  FormControl,
+  InputLabel,
+  MenuItem,
 } from "@mui/material";
 import AuthLayout from "../components/AuthLayout";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { CheckCircle, Error } from "@mui/icons-material";
-import { useAgencyCode } from "../services/apiHooks";
+import {
+  useAgencyCode,
+  useGetCounties,
+  useGetProvinces,
+} from "../services/apiHooks";
 
 export default function AgentForm() {
   const location = useLocation();
@@ -32,9 +40,12 @@ export default function AgentForm() {
   const { handleSubmit, control, watch } = useForm({
     defaultValues: {
       agent_code: "",
+      province: "",
+      county: "",
     },
   });
 
+  //--------------------- Agent Code ---------------------
   const agentCode = watch("agent_code");
 
   useEffect(() => {
@@ -67,6 +78,17 @@ export default function AgentForm() {
 
     return () => clearTimeout(delay);
   }, [agentCode]);
+  //
+
+  //--------------------- Provinces & Counties -----------
+  const { data: provinces } = useGetProvinces();
+  const selectedProvince = watch("province");
+
+  const { data: counties, isFetching: countiesLoading } = useGetCounties({
+    enabled: !!selectedProvince,
+    province: selectedProvince,
+  });
+  //
 
   const onSubmit = (data) => {
     console.log("User Info:", data);
@@ -100,6 +122,63 @@ export default function AgentForm() {
                   ) : null,
                 }}
               />
+            )}
+          />
+
+          <Controller
+            name="province"
+            control={control}
+            rules={{ required: "استان را انتخاب کنید" }}
+            render={({ field, fieldState }) => (
+              <FormControl fullWidth>
+                <InputLabel id="province-label">استان</InputLabel>
+                <Select
+                  {...field}
+                  labelId="province-label"
+                  error={!!fieldState.error}
+                >
+                  {provinces?.map((prov) => (
+                    <MenuItem key={prov.id} value={prov.id}>
+                      {prov.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {fieldState.error && (
+                  <Typography color="error" variant="caption">
+                    {fieldState.error.message}
+                  </Typography>
+                )}
+              </FormControl>
+            )}
+          />
+
+          <Controller
+            name="county"
+            control={control}
+            rules={{ required: "شهر را انتخاب کنید" }}
+            render={({ field, fieldState }) => (
+              <FormControl
+                fullWidth
+                disabled={!selectedProvince || countiesLoading}
+              >
+                <InputLabel id="county-label">شهر</InputLabel>
+                <Select
+                  {...field}
+                  labelId="county-label"
+                  error={!!fieldState.error}
+                >
+                  {counties?.map((city) => (
+                    <MenuItem key={city.id} value={city.id}>
+                      {city.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {fieldState.error && (
+                  <Typography color="error" variant="caption">
+                    {fieldState.error.message}
+                  </Typography>
+                )}
+              </FormControl>
             )}
           />
 
