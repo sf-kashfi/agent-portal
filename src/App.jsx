@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MobileForm from "./pages/MobileForm";
 import OtpForm from "./pages/OtpForm";
 import NameForm from "./pages/NameForm";
+import AgentForm from "./pages/AgentForm";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
           <Route path="/mobile" element={<MobileForm />} />
           <Route path="/otp" element={<OtpForm />} />
           <Route path="/name" element={<NameForm />} />
+          <Route path="/agent" element={<AgentForm />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

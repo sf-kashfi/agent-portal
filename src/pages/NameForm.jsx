@@ -24,6 +24,7 @@ export default function NameForm() {
 
   const onSubmit = (data) => {
     console.log("User Info:", data);
+    navigate("/agent", { state: { name: data } });
   };
 
   return (
