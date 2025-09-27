@@ -10,6 +10,10 @@ import {
   FormControl,
   InputLabel,
   MenuItem,
+  Autocomplete,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
 } from "@mui/material";
 import AuthLayout from "../components/AuthLayout";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -19,6 +23,7 @@ import {
   useAgencyCode,
   useGetCounties,
   useGetProvinces,
+  useGetBranches,
 } from "../services/apiHooks";
 
 export default function AgentForm() {
@@ -42,6 +47,12 @@ export default function AgentForm() {
       agent_code: "",
       province: "",
       county: "",
+      address: "",
+      branch: null,
+      phone: "",
+      code: "",
+      agency_type: "",
+      agency_name: "",
     },
   });
 
@@ -88,6 +99,21 @@ export default function AgentForm() {
     enabled: !!selectedProvince,
     province: selectedProvince,
   });
+  //
+
+  //--------------------- Branches -----------------------
+  const [branchSearch, setBranchSearch] = useState("");
+
+  const { data: branches, isFetching: branchesLoading } = useGetBranches({
+    name: branchSearch,
+    insurance: "DEY",
+    province: selectedProvince,
+    enabled: !!selectedProvince,
+  });
+  //
+
+  //--------------------- Agent Type ---------------------
+  const agentType = watch("agent_type");
   //
 
   const onSubmit = (data) => {
@@ -181,6 +207,140 @@ export default function AgentForm() {
               </FormControl>
             )}
           />
+
+          <Controller
+            name="address"
+            control={control}
+            rules={{ required: "آدرس را وارد کنید" }}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                label="آدرس"
+                variant="outlined"
+                fullWidth
+                multiline
+                rows={5}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+              />
+            )}
+          />
+
+          <Controller
+            name="branch"
+            control={control}
+            rules={{ required: "شعبه را انتخاب کنید" }}
+            render={({ field, fieldState }) => (
+              <Autocomplete
+                {...field}
+                onChange={(_, value) => field.onChange(value)}
+                options={branches || []}
+                getOptionLabel={(option) => option?.name || ""}
+                loading={branchesLoading}
+                disabled={!selectedProvince}
+                filterOptions={(x) => x}
+                onInputChange={(_, value) => setBranchSearch(value)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="شعبه بیمه"
+                    variant="outlined"
+                    fullWidth
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                  />
+                )}
+              />
+            )}
+          />
+
+          <Stack direction="row" spacing={2}>
+            <Controller
+              name="code"
+              control={control}
+              rules={{ required: "فیلد الزامی است" }}
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  label="تلفن ثابت"
+                  variant="outlined"
+                  sx={{ width: "30%" }} // smaller input
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
+
+            <Controller
+              name="phone"
+              control={control}
+              rules={{
+                required: "تلفن ثابت الزامی است",
+                pattern: {
+                  value: /^[0-9]{10,11}$/,
+                  message: "شماره معتبر نیست",
+                },
+              }}
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  label="تلفن ثابت"
+                  variant="outlined"
+                  fullWidth
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
+          </Stack>
+
+          <Controller
+            name="agent_type"
+            control={control}
+            rules={{ required: "نوع نمایندگی را انتخاب کنید" }}
+            render={({ field, fieldState }) => (
+              <FormControl component="fieldset">
+                <Typography variant="subtitle1" gutterBottom>
+                  نوع نمایندگی
+                </Typography>
+                <RadioGroup row {...field}>
+                  <FormControlLabel
+                    value="haghighi"
+                    control={<Radio />}
+                    label="حقیقی"
+                  />
+                  <FormControlLabel
+                    value="hoghoghi"
+                    control={<Radio />}
+                    label="حقوقی"
+                  />
+                </RadioGroup>
+                {fieldState.error && (
+                  <Typography color="error" variant="caption">
+                    {fieldState.error.message}
+                  </Typography>
+                )}
+              </FormControl>
+            )}
+          />
+
+          {agentType === "hoghoghi" && (
+            <Controller
+              name="agency_name"
+              control={control}
+              rules={{ required: "نام نمایندگی الزامی است" }}
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  label="نام نمایندگی"
+                  variant="outlined"
+                  fullWidth
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
+          )}
 
           <Button
             type="submit"

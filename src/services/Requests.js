@@ -7,3 +7,5 @@ export const onAgencyCode = (body) => post(signup.agencyCode, body);
 
 export const onProvinces = () => get(base.provinces);
 export const onCounties = (province) => get(base.counties, { province });
+export const onBranches = ({ name, insurance, province }) =>
+  get(base.branches, { name, insurance, province });

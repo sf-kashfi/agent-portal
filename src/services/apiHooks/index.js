@@ -1,6 +1,7 @@
 import { createMutation, createQuery } from "../reactQueryFactory";
 import {
   onAgencyCode,
+  onBranches,
   onCounties,
   onCreateOtp,
   onProvinces,
@@ -15,3 +16,4 @@ export const useAgencyCode = createMutation(onAgencyCode);
 //query
 export const useGetProvinces = createQuery(["provinces", onProvinces]);
 export const useGetCounties = createQuery(["counties"], onCounties);
+export const useGetBranches = createQuery(["branches", onBranches]);
