@@ -24,12 +24,12 @@ import {
   useGetCounties,
   useGetProvinces,
   useGetBranches,
+  useVerification,
 } from "../services/apiHooks";
 
 export default function AgentForm() {
   const location = useLocation();
   const navigate = useNavigate();
-  const name = location.state?.name;
 
   const mutationFn = useAgencyCode();
 
@@ -44,15 +44,18 @@ export default function AgentForm() {
 
   const { handleSubmit, control, watch } = useForm({
     defaultValues: {
+      phone_number: location.state?.phone || "",
+      first_name: location.state?.name?.first_name || "",
+      last_name: location.state?.name?.last_name || "",
       agent_code: "",
       province: "",
       county: "",
       address: "",
-      branch: null,
+      insurance_branch: "",
       phone: "",
-      code: "",
+      city_code: "",
       agency_type: "",
-      agency_name: "",
+      Name: "",
     },
   });
 
@@ -95,29 +98,38 @@ export default function AgentForm() {
   const { data: provinces } = useGetProvinces();
   const selectedProvince = watch("province");
 
-  const { data: counties, isFetching: countiesLoading } = useGetCounties({
-    enabled: !!selectedProvince,
-    province: selectedProvince,
-  });
+  const { data: counties, isFetching: countiesLoading } = useGetCounties(
+    { province: selectedProvince },
+    {
+      enabled: !!selectedProvince,
+    }
+  );
   //
 
   //--------------------- Branches -----------------------
   const [branchSearch, setBranchSearch] = useState("");
 
-  const { data: branches, isFetching: branchesLoading } = useGetBranches({
-    name: branchSearch,
-    insurance: "DEY",
-    province: selectedProvince,
-    enabled: !!selectedProvince,
-  });
+  const { data: branches, isFetching: branchesLoading } = useGetBranches(
+    { name: branchSearch, insurance: "DEY", province: selectedProvince },
+    {
+      enabled: !!branchSearch && !!selectedProvince,
+    }
+  );
   //
 
   //--------------------- Agent Type ---------------------
-  const agentType = watch("agent_type");
+  const agentType = watch("agency_type");
   //
+
+  const mutationSubmitFn = useVerification();
 
   const onSubmit = (data) => {
     console.log("User Info:", data);
+    mutationSubmitFn.mutate(data, {
+      onSuccess: () => {
+        // navigate("/otp", { state: { phone: data.phone_number } });
+      },
+    });
   };
 
   return (
@@ -193,11 +205,12 @@ export default function AgentForm() {
                   labelId="county-label"
                   error={!!fieldState.error}
                 >
-                  {counties?.map((city) => (
-                    <MenuItem key={city.id} value={city.id}>
-                      {city.name}
-                    </MenuItem>
-                  ))}
+                  {counties?.length > 0 &&
+                    counties?.map((city) => (
+                      <MenuItem key={city.id} value={city.id}>
+                        {city.name}
+                      </MenuItem>
+                    ))}
                 </Select>
                 {fieldState.error && (
                   <Typography color="error" variant="caption">
@@ -227,14 +240,14 @@ export default function AgentForm() {
           />
 
           <Controller
-            name="branch"
+            name="insurance_branch"
             control={control}
             rules={{ required: "شعبه را انتخاب کنید" }}
             render={({ field, fieldState }) => (
               <Autocomplete
                 {...field}
                 onChange={(_, value) => field.onChange(value)}
-                options={branches || []}
+                options={branches?.response || []}
                 getOptionLabel={(option) => option?.name || ""}
                 loading={branchesLoading}
                 disabled={!selectedProvince}
@@ -256,7 +269,7 @@ export default function AgentForm() {
 
           <Stack direction="row" spacing={2}>
             <Controller
-              name="code"
+              name="city_code"
               control={control}
               rules={{ required: "فیلد الزامی است" }}
               render={({ field, fieldState }) => (
@@ -295,7 +308,7 @@ export default function AgentForm() {
           </Stack>
 
           <Controller
-            name="agent_type"
+            name="agency_type"
             control={control}
             rules={{ required: "نوع نمایندگی را انتخاب کنید" }}
             render={({ field, fieldState }) => (
@@ -305,12 +318,12 @@ export default function AgentForm() {
                 </Typography>
                 <RadioGroup row {...field}>
                   <FormControlLabel
-                    value="haghighi"
+                    value="real"
                     control={<Radio />}
                     label="حقیقی"
                   />
                   <FormControlLabel
-                    value="hoghoghi"
+                    value="legal"
                     control={<Radio />}
                     label="حقوقی"
                   />
@@ -324,9 +337,9 @@ export default function AgentForm() {
             )}
           />
 
-          {agentType === "hoghoghi" && (
+          {agentType === "legal" && (
             <Controller
-              name="agency_name"
+              name="Name"
               control={control}
               rules={{ required: "نام نمایندگی الزامی است" }}
               render={({ field, fieldState }) => (
