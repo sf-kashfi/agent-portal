@@ -126,8 +126,8 @@ export default function AgentForm() {
   const onSubmit = (data) => {
     console.log("User Info:", data);
     mutationSubmitFn.mutate(data, {
-      onSuccess: () => {
-        // navigate("/otp", { state: { phone: data.phone_number } });
+      onSuccess: (data) => {
+        navigate("/success", { state: { res: data.response } });
       },
     });
   };
@@ -246,7 +246,7 @@ export default function AgentForm() {
             render={({ field, fieldState }) => (
               <Autocomplete
                 {...field}
-                onChange={(_, value) => field.onChange(value)}
+                onChange={(_, value) => field.onChange(value?.id || "")}
                 options={branches?.response || []}
                 getOptionLabel={(option) => option?.name || ""}
                 loading={branchesLoading}
@@ -290,7 +290,7 @@ export default function AgentForm() {
               rules={{
                 required: "تلفن ثابت الزامی است",
                 pattern: {
-                  value: /^[0-9]{10,11}$/,
+                  value: /^[1-9][0-9]{9,10}$/,
                   message: "شماره معتبر نیست",
                 },
               }}
