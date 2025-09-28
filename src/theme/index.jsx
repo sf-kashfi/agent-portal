@@ -8,6 +8,7 @@ import { prefixer } from "stylis";
 import rtlPlugin from "stylis-plugin-rtl";
 import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
+import { useEffect } from "react";
 
 const cacheRtl = createCache({
   key: "mui-rtl",
@@ -15,6 +16,9 @@ const cacheRtl = createCache({
 });
 
 function ThemeProvider({ children }) {
+  useEffect(() => {
+    document.body.setAttribute("dir", "rtl");
+  }, []);
   const theme = createTheme({
     direction: "rtl",
     palette: {
